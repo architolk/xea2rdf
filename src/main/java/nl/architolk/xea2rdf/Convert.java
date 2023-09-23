@@ -279,7 +279,7 @@ public class Convert implements Runnable{
     LOG.info("Starting conversion");
     try {
       // db parameters
-      String url = "jdbc:sqlite:local/test.xea";
+      String url = "jdbc:sqlite:" + inputFile;
       // create a connection to the database
       conn = DriverManager.getConnection(url);
 

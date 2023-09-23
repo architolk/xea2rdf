@@ -230,17 +230,22 @@ public class Convert implements Runnable{
         exportObjectDef("XRef",Integer.toString(rs.getRow()));
         exportGUID("ea:client",rs.getString("Client"));
         String description = rs.getString("Description");
+        //if (rs.getRow()==290) {LOG.error(description);}
         if (description!=null) {
-          String[] params = description.split("@ENDPROP;");
-          for (String param : params) {
-            String name = param.replaceAll("^(.*)@NAME=(.*)@ENDNAME(.*)$","$2");
-            String value = param.replaceAll("^(.*)@VALU=(.*)@ENDVALU(.*)$","$2");
-            String type = param.replaceAll("^(.*)@TYPE=(.*)@ENDTYPE(.*)$","$2");
-            if (!name.isEmpty()) {
-              if (type.equals("Boolean")) {
-                exportBooleanValue("ea:"+name,value.equals("1"));
-              } else {
-                exportStringValue("ea:"+name,value);
+          if (description.matches("(.*)@NAME=(.*)")) { //Added, it seams that these things are not always their...
+            String[] params = description.split("@ENDPROP;");
+            for (String param : params) {
+              String name = param.replaceAll("^(.*)@NAME=(.*)@ENDNAME(.*)$","$2");
+              String value = param.replaceAll("^(.*)@VALU=(.*)@ENDVALU(.*)$","$2");
+              String type = param.replaceAll("^(.*)@TYPE=(.*)@ENDTYPE(.*)$","$2");
+              if (!name.isEmpty()) {
+                if (!type.equals("LEGEND_OBJECTSTYLE")) { //This seems to be something we don't want to process...?
+                  if (type.equals("Boolean")) {
+                    exportBooleanValue("ea:"+name,value.equals("1"));
+                  } else {
+                    exportStringValue("ea:"+name,value);
+                  }
+                }
               }
             }
           }
@@ -283,7 +288,7 @@ public class Convert implements Runnable{
       // create a connection to the database
       conn = DriverManager.getConnection(url);
 
-      System.out.println("Connection to SQLite has been established.");
+      LOG.info("Connection to SQLite has been established.");
 
       //printTables();
       exportEATables();
